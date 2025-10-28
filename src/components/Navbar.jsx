@@ -61,13 +61,7 @@ const Navbar = () => {
           >
             Profile
           </Link>
-          <Link
-            to="/about"
-            onClick={() => setOpen(false)}
-            className="hover:text-blue-500"
-          >
-            About
-          </Link>
+          
         </div>
       )}
     </nav>
