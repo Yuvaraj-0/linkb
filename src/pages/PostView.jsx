@@ -1,115 +1,77 @@
-import React, { useEffect, useState, useContext } from "react";
+import React from "react";
 import { useParams } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import {
-  getComments,
-  commentPost,
-  likePost,
-  getAllPosts,
-} from "../api/postAPI";
-import ShareButtons from "../components/ShareButtons";
 
 const PostView = () => {
-  const { id } = useParams(); // 🆔 post ID from URL
-  const { user } = useContext(AuthContext); // ✅ Access logged-in user & token
-  const token = user?.token;
+  const { postId } = useParams();
 
-  const [post, setPost] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
+  const baseUrl = "https://linkb-git-main-yuvaraj-0s-projects.vercel.app"; // ✅ your live domain
+  const postUrl = `${baseUrl}/post/${postId}`;
 
-  // Fetch post details
-  useEffect(() => {
-    const fetchPost = async () => {
-      if (!token) return;
-      const allPosts = await getAllPosts(token);
-      const selectedPost = allPosts.find((p) => p._id === id);
-      setPost(selectedPost);
-    };
-    fetchPost();
-  }, [id, token]);
+  const encodedUrl = encodeURIComponent(postUrl);
+  const encodedTitle = encodeURIComponent("Check out this post on LinkB!");
 
-  // Fetch comments
-  useEffect(() => {
-    const loadComments = async () => {
-      if (!id || !token) return;
-      const res = await getComments(id, token);
-      setComments(res.comments || []);
-    };
-    loadComments();
-  }, [id, token]);
-
-  const handleComment = async () => {
-    if (!newComment.trim()) return;
-    await commentPost(id, newComment, token);
-    setNewComment("");
-    const updated = await getComments(id, token);
-    setComments(updated.comments);
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(postUrl);
+    alert("✅ Link copied to clipboard!");
   };
-
-  const handleLike = async () => {
-    const res = await likePost(id, token);
-    setPost({ ...post, likes: res.updatedLikes });
-  };
-
-  if (!post) return <div className="p-5 text-center">Loading post...</div>;
-
-  const postUrl = `${window.location.origin}/post/${post._id}`;
 
   return (
-    <div className="max-w-2xl mx-auto mt-6 bg-white shadow-md rounded-xl p-6">
-      <h2 className="text-xl font-semibold mb-2">{post.user?.name}</h2>
-      <p className="text-gray-800 mb-4">{post.content}</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-sm text-center">
+        <h2 className="text-xl font-semibold mb-3">Share This Post</h2>
 
-      {post.image && (
-        <img
-          src={post.image}
-          alt="Post"
-          className="rounded-lg mb-4 w-full object-cover"
+        <input
+          type="text"
+          value={postUrl}
+          readOnly
+          onClick={(e) => e.target.select()}
+          className="border w-full rounded-lg p-2 text-center mb-3 text-gray-700"
         />
-      )}
 
-      <div className="flex items-center gap-4">
         <button
-          onClick={handleLike}
-          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg"
+          onClick={copyToClipboard}
+          className="w-full bg-blue-500 text-white py-2 rounded-lg mb-3 hover:bg-blue-600"
         >
-          👍 {post.likes?.length || 0} Likes
+          Copy Link
         </button>
 
-        <ShareButtons postUrl={postUrl} postTitle={post.content} />
-      </div>
-
-      {/* Comments Section */}
-      <div className="mt-5 border-t pt-4">
-        <h3 className="font-semibold mb-3">Comments ({comments.length})</h3>
-
-        <div className="flex gap-2 mb-3">
-          <input
-            type="text"
-            placeholder="Add a comment..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            className="flex-1 border rounded-lg p-2"
-          />
-          <button
-            onClick={handleComment}
-            className="bg-blue-500 text-white px-3 rounded-lg"
+        <div className="flex flex-col gap-2">
+          <a
+            href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-600 hover:underline"
           >
-            Post
-          </button>
+            WhatsApp
+          </a>
+          <a
+            href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline"
+          >
+            Twitter / X
+          </a>
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            Facebook
+          </a>
+          <a
+            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-700 hover:underline"
+          >
+            LinkedIn
+          </a>
         </div>
-
-        {comments.map((c) => (
-          <div key={c._id} className="mb-2 border-b pb-2">
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">{c.user?.name}</span>: {c.text}
-            </p>
-          </div>
-        ))}
       </div>
     </div>
   );
 };
 
-export default PostView;
+export default PostView

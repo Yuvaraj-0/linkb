@@ -9,9 +9,12 @@ const Dashboard = () => {
   const { user, token } = useContext(AuthContext);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+ 
 
   // 📡 Fetch all posts after login
   useEffect(() => {
+    
+  
     if (!token) return;
     const fetchPosts = async () => {
       try {
@@ -160,10 +163,8 @@ const Dashboard = () => {
 
                   <CommentPopup postId={post._id} token={token} />
 
-                  <ShareButtons
-                    postUrl={`https://myapp.com/post/${post._id}`}
-                    postTitle={post.content.slice(0, 50)}
-                  />
+                  <ShareButtons postId={post._id} postTitle={post.content.slice(0, 50)} />
+
                 </div>
               </div>
             ))
