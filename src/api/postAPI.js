@@ -1,25 +1,6 @@
 // postAPI.js
 const BASE_URL = "https://linkedin-nrom.onrender.com/api/posts";
 import axios from "axios";
-// export const createPost = async (content, token) => {
-//   try {
-//     const res = await fetch(`${BASE_URL}/post`, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${token}`,
-//       },
-//       body: JSON.stringify({ content }),
-//     });
-
-//     const data = await res.json();
-//     return data; // ✅ return full response
-//   } catch (error) {
-//     console.error("❌ Error in createPost API:", error);
-//     throw error;
-//   }
-// };
-// ✅ Create Post (with optional image)
 
 
 export const createPost = async (content, imageFile, token) => {
@@ -45,23 +26,7 @@ export const createPost = async (content, imageFile, token) => {
 };
 
 
-// export const getAllPosts = async (token) => {
-//   try {
-//     const res = await fetch(`${BASE_URL}/get`, {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     });
 
-//     const data = await res.json();
-//     console.log("📥 Fetched Posts:", data);
-//     return data; // expects array of posts
-//   } catch (error) {
-//     console.error("❌ Error fetching posts:", error);
-//     throw error;
-//   }
-// };
 
 
 // 🧠 Get Post by ID
@@ -166,4 +131,26 @@ export const updatePostAPI = async (postId, content, token) => {
     { headers: { Authorization: `Bearer ${token}` } }
   );
   return res.data;
+};
+
+// 🧩 Get Single Post by ID
+export const getPostByIdAPI = async (postId, token) => {
+  try {
+    const res = await fetch(`${BASE_URL}/${postId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Post not found");
+
+    console.log("🧠 Single Post Fetched:", data);
+    return data.post || data;
+  } catch (error) {
+    console.error("❌ Error fetching single post:", error);
+    throw error;
+  }
 };
