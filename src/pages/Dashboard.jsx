@@ -4,17 +4,16 @@ import { getAllPosts, likePost } from "../api/postAPI";
 import { Link } from "react-router-dom";
 import CommentPopup from "../components/CommentPopup";
 import ShareButtons from "../components/ShareButtons";
+import EditProfile from "../components/EditProfile";
 
 const Dashboard = () => {
   const { user, token } = useContext(AuthContext);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
- 
+  const [profileData, setProfileData] = useState(user || null);
+  const [showEditPopup, setShowEditPopup] = useState(false);
 
-  // 📡 Fetch all posts after login
   useEffect(() => {
-    
-  
     if (!token) return;
     const fetchPosts = async () => {
       try {
@@ -29,7 +28,6 @@ const Dashboard = () => {
     fetchPosts();
   }, [token]);
 
-  // ❤️ Like / Unlike handler
   const handleLike = async (postId) => {
     try {
       const res = await likePost(postId, token);
@@ -47,7 +45,11 @@ const Dashboard = () => {
     }
   };
 
-  // ⚡ Animated Loading Spinner
+  const handleSaveProfile = (data) => {
+    setProfileData(data);
+    setShowEditPopup(false);
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen w-full bg-transparent">
@@ -59,30 +61,50 @@ const Dashboard = () => {
     );
   }
 
-  // 🏠 Main Dashboard
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row justify-center items-start p-4 md:p-6 gap-6">
-      {/* 👤 Left Sidebar - User Info */}
+      {/* 👤 Left Sidebar */}
       <div className="bg-white shadow-md rounded-2xl p-4 w-full md:w-1/4 text-center md:sticky md:top-24 h-fit">
         <Link to="/profile">
-          {user?.avatar ? (
+          {profileData?.avatar ? (
             <img
-              src={user.avatar}
+              src={profileData.avatar}
               alt="User Avatar"
               className="w-20 h-20 rounded-full mx-auto mb-3 object-cover"
             />
           ) : (
             <div className="w-20 h-20 rounded-full bg-blue-500 mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold">
-              {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+              {profileData?.name ? profileData.name.charAt(0).toUpperCase() : "U"}
             </div>
           )}
         </Link>
 
-        <h3 className="font-semibold text-lg">{user?.name || "Guest User"}</h3>
+        <h3 className="font-semibold text-lg">
+          {profileData?.name || "Guest User"}
+        </h3>
         <p className="text-sm text-gray-500 mb-3">
-          {user?.email || "No email available"}
+          {profileData?.email || "No email available"}
         </p>
-        <Link to="/upload" className="text-blue-600 font-medium hover:underline">
+
+        {!profileData?.degree ? (
+          <button
+            onClick={() => setShowEditPopup(true)}
+            className="text-blue-600 font-medium hover:underline"
+          >
+            ⚙️ Set Up Your Profile
+          </button>
+        ) : (
+          <div className="text-gray-600 mt-3 text-sm">
+            <p><strong>Degree:</strong> {profileData.degree}</p>
+            <p><strong>Skills:</strong> {profileData.skills}</p>
+            <p><strong>Address:</strong> {profileData.address}</p>
+          </div>
+        )}
+
+        <Link
+          to="/upload"
+          className="block mt-3 text-blue-600 font-medium hover:underline"
+        >
           ➕ Upload a Post
         </Link>
       </div>
@@ -90,7 +112,6 @@ const Dashboard = () => {
       {/* 📰 Posts Feed */}
       <div className="bg-white shadow-md rounded-2xl p-4 md:p-6 w-full md:w-2/4">
         <h2 className="text-xl font-semibold mb-4">All Posts</h2>
-
         <div className="space-y-6">
           {posts.length === 0 ? (
             <p className="text-gray-500 text-center">No posts yet 💤</p>
@@ -100,7 +121,6 @@ const Dashboard = () => {
                 key={post._id}
                 className="border border-gray-200 rounded-2xl bg-white shadow-sm"
               >
-                {/* 👤 Post Header */}
                 <div className="flex items-center gap-3 p-4">
                   <Link
                     to={`/profile/${post.user?._id}`}
@@ -133,10 +153,8 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                {/* 📝 Post Content */}
                 <div className="p-4">
                   <p className="text-gray-800 mb-3">{post.content}</p>
-
                   {post.image && (
                     <div className="w-full mt-3">
                       <img
@@ -148,7 +166,6 @@ const Dashboard = () => {
                   )}
                 </div>
 
-                {/* ❤️ Like | 💬 Comment | 📤 Share */}
                 <div className="flex justify-between items-center px-4 pb-3 border-t border-gray-200">
                   <button
                     onClick={() => handleLike(post._id)}
@@ -160,17 +177,25 @@ const Dashboard = () => {
                   >
                     ❤️ <span>{post.likeCount || 0}</span>
                   </button>
-
                   <CommentPopup postId={post._id} token={token} />
-
-                  <ShareButtons postId={post._id} postTitle={post.content.slice(0, 50)} />
-
+                  <ShareButtons
+                    postId={post._id}
+                    postTitle={post.content.slice(0, 50)}
+                  />
                 </div>
               </div>
             ))
           )}
         </div>
       </div>
+
+      {/* 🪄 Profile Edit Popup */}
+      {showEditPopup && (
+        <EditProfile
+          onClose={() => setShowEditPopup(false)}
+          onSave={handleSaveProfile}
+        />
+      )}
     </div>
   );
 };

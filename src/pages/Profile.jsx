@@ -1,83 +1,75 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getPostsByUserAPI,
   deletePostAPI,
   updatePostAPI,
 } from "../api/postAPI";
-import { uploadAvatarAPI } from "../api/profileAPI"; // ✅ Avatar upload API
+import { getProfileById, deleteProfile } from "../api/profileAPI";
+import EditProfile from "../components/EditProfile";
 
 const Profile = () => {
-  const { user, token, setUser } = useContext(AuthContext);
+  const { user, token, logout } = useContext(AuthContext);
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true); // 🌀 Loading state
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editContent, setEditContent] = useState("");
-  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || "");
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const navigate = useNavigate();
 
-  // 📡 Fetch user posts
+  // 📡 Fetch profile + posts
   useEffect(() => {
-    const fetchUserPosts = async () => {
+    const fetchData = async () => {
       if (!user?._id || !token) return;
       try {
         setLoading(true);
-        const data = await getPostsByUserAPI(user._id, token);
-        setPosts(data);
+        const [profileData, postsData] = await Promise.all([
+          getProfileById(user._id, token),
+          getPostsByUserAPI(user._id, token),
+        ]);
+        setProfile(profileData.profile);
+        setPosts(postsData);
       } catch (error) {
-        console.error("❌ Error fetching user posts:", error);
+        console.error("❌ Error fetching profile or posts:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchUserPosts();
+    fetchData();
   }, [user, token]);
 
-  // 🖼️ Handle Avatar Upload
-  const handleAvatarChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const previewURL = URL.createObjectURL(file);
-    setAvatarPreview(previewURL);
-
-    try {
-      const data = await uploadAvatarAPI(token, file);
-      setUser({ ...user, avatar: data.avatar.avatarUrl });
-      setAvatarPreview(data.avatar.avatarUrl);
-      alert("✅ Avatar updated successfully!");
-    } catch (error) {
-      console.error("❌ Error uploading avatar:", error);
-      alert("Failed to upload avatar");
-    }
-  };
-
-  // 🗑️ Delete post
-  const handleDelete = async (postId) => {
+  // 🗑️ Delete Post
+  const handleDeletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
       await deletePostAPI(postId, token);
-      setPosts(posts.filter((post) => post._id !== postId));
+      setPosts(posts.filter((p) => p._id !== postId));
     } catch (error) {
       console.error("❌ Error deleting post:", error);
     }
   };
 
-  // ✏️ Start editing post
+  // ✏️ Edit Post
   const handleEdit = (post) => {
     setEditingPostId(post._id);
     setEditContent(post.content);
   };
+  // 🧾 Handle saving updated profile data
+  const handleProfileSave = (updatedProfile) => {
+    setProfile(updatedProfile.profile || updatedProfile);
+    setShowEditProfile(false);
+  };
+  
 
-  // 💾 Save updated post
+  // 💾 Save Post
   const handleSave = async () => {
     try {
-      const updatedPost = await updatePostAPI(editingPostId, editContent, token);
-      setPosts(
-        posts.map((p) =>
-          p._id === editingPostId ? { ...p, content: updatedPost.content } : p
-        )
-      );
+      const updated = await updatePostAPI(editingPostId, editContent, token);
+      setPosts(posts.map((p) =>
+        p._id === editingPostId ? { ...p, content: updated.content } : p
+      ));
       setEditingPostId(null);
       setEditContent("");
     } catch (error) {
@@ -85,7 +77,24 @@ const Profile = () => {
     }
   };
 
-  // 🌀 Show loading animation while fetching
+  // ❌ Delete Profile
+  const handleDeleteProfile = async () => {
+    if (!window.confirm("Are you sure you want to delete your profile?")) return;
+    try {
+      await deleteProfile(profile._id, token);
+      alert("Profile deleted successfully!");
+      setProfile(null);
+    } catch (error) {
+      console.error("❌ Error deleting profile:", error);
+    }
+  };
+
+  // 🔒 Logout
+  const handleLogout = () => {
+    logout();
+    navigate("/signin");
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-white">
@@ -97,49 +106,50 @@ const Profile = () => {
     );
   }
 
-  // ✅ Main UI after loading
   return (
-    <div className="p-6 flex flex-col items-center bg-gray-50 min-h-screen">
-      {/* 🧍‍♂️ User Profile Card */}
-      <div className="bg-white shadow-md rounded-2xl p-5 w-full md:w-1/3 text-center mb-6">
-        <div className="relative w-24 h-24 mx-auto mb-4">
-          {avatarPreview ? (
-            <img
-              src={avatarPreview}
-              alt="User Avatar"
-              className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center text-white text-3xl font-semibold">
-              {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-            </div>
-          )}
+    <div className="relative p-6 flex flex-col items-center bg-gray-50 min-h-screen">
+      {/* 🔒 Logout Button */}
+      <button
+        onClick={handleLogout}
+        className="absolute top-6 right-6 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+      >
+        🚪 Logout
+      </button>
 
-          <label
-            htmlFor="avatarUpload"
-            className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 cursor-pointer hover:bg-blue-600"
+      {/* 🧍‍♂️ Profile Section */}
+      <div className="bg-white shadow-md rounded-2xl p-6 w-full md:w-1/2 text-center mb-8">
+        <h2 className="text-2xl font-semibold mb-3">{user?.name}</h2>
+        <p className="text-gray-600 mb-1">📧 {user?.email}</p>
+        {profile ? (
+          <>
+            <p className="text-gray-700 mt-2">🎓 {profile.degree}</p>
+            <p className="text-gray-700">💼 {profile.skills}</p>
+            <p className="text-gray-700">📍 {profile.address}</p>
+          </>
+        ) : (
+          <p className="text-gray-500">No profile info yet.</p>
+        )}
+
+        <div className="mt-4 flex justify-center gap-4">
+          <button
+            onClick={() => setShowEditProfile(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            ✏️
-          </label>
-          <input
-            id="avatarUpload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
-        </div>
+            ✏️ Edit Profile
+          </button>
 
-        <h3 className="font-semibold text-xl">{user?.name || "Guest User"}</h3>
-        <p className="text-sm text-gray-500 mb-3">
-          {user?.email || "No email available"}
-        </p>
-        <Link to="/upload" className="text-blue-600 font-medium hover:underline">
-          Upload a Post
-        </Link>
+          {profile && (
+            <button
+              onClick={handleDeleteProfile}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              🗑️ Delete Profile
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* 🧩 User's Posts Section */}
+      {/* 🧩 User's Posts */}
       <div className="w-full md:w-3/4">
         <h2 className="text-2xl font-semibold mb-5 text-center">
           {user?.name}'s Posts
@@ -196,7 +206,7 @@ const Profile = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => handleDelete(post._id)}
+                    onClick={() => handleDeletePost(post._id)}
                     className="bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600"
                   >
                     Delete
@@ -207,6 +217,14 @@ const Profile = () => {
           </div>
         )}
       </div>
+
+      {/* ✏️ Edit Profile Popup */}
+      {showEditProfile && (
+        <EditProfile
+          onClose={() => setShowEditProfile(false)}
+          onSave={handleProfileSave}
+        />
+      )}
     </div>
   );
 };

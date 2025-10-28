@@ -1,61 +1,123 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import {
+  createProfile,
+  updateProfile,
+  deleteProfile,
+} from "../api/profileAPI";
 
-export default function EditProfile({ profile, onSave }) {
-  const [form, setForm] = useState({
-    name: profile?.name || "",
-    degree: profile?.degree || "",
-    skills: profile?.skills || "",
-    address: profile?.address || "",
-    email: profile?.email || "",
-    portfolio: profile?.portfolio || "",
+const EditProfile = ({ onClose, onSave, existingProfile }) => {
+  const { token, user } = useContext(AuthContext);
+
+  const [formData, setFormData] = useState({
+    name: existingProfile?.name || user?.name || "",
+    degree: existingProfile?.degree || "",
+    skills: existingProfile?.skills || "",
+    address: existingProfile?.address || "",
   });
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  // ✅ Create or Update
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = existingProfile
+        ? await updateProfile(existingProfile._id, formData, token)
+        : await createProfile(formData, token);
+
+      onSave(response);
+      onClose(); // close popup
+    } catch (error) {
+      console.error("❌ Error saving profile:", error);
+    }
   };
 
-  const handleSubmit = async () => {
+  // 🗑️ Delete Profile
+  const handleDelete = async () => {
+    if (!existingProfile?._id) return alert("No profile to delete!");
+    if (!window.confirm("Are you sure you want to delete your profile?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/profile/${profile._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      onSave(data); // update parent state
-    } catch (err) {
-      console.error("Error updating profile:", err);
+      await deleteProfile(existingProfile._id, token);
+      onSave({ profile: null }); // remove profile from UI
+      onClose();
+    } catch (error) {
+      console.error("❌ Error deleting profile:", error);
     }
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white p-6 mt-10 rounded-xl shadow-md">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Edit Profile</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative">
+        <h2 className="text-2xl font-semibold mb-4 text-center">
+          {existingProfile ? "Edit Profile" : "Create Profile"}
+        </h2>
 
-      <div className="grid grid-cols-1 gap-4">
-        {["name", "degree", "skills", "address", "email", "portfolio"].map((field) => (
-          <div key={field} className="flex flex-col">
-            <label className="capitalize font-medium mb-1">{field}</label>
-            <input
-              type="text"
-              name={field}
-              value={form[field]}
-              onChange={handleChange}
-              placeholder={`Enter your ${field}`}
-              className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            name="name"
+            placeholder="Your Name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2"
+            required
+          />
+          <input
+            name="degree"
+            placeholder="Your Degree"
+            value={formData.degree}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2"
+            required
+          />
+          <input
+            name="skills"
+            placeholder="Your Skills"
+            value={formData.skills}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2"
+            required
+          />
+          <input
+            name="address"
+            placeholder="Your Address"
+            value={formData.address}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2"
+            required
+          />
+
+          <div className="flex justify-between mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+
+            {existingProfile && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+              >
+                Delete
+              </button>
+            )}
+
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            >
+              {existingProfile ? "Update" : "Create"}
+            </button>
           </div>
-        ))}
-      </div>
-
-      <div className="flex justify-end mt-6">
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          Save Changes
-        </button>
+        </form>
       </div>
     </div>
   );
-}
+};
+
+export default EditProfile;

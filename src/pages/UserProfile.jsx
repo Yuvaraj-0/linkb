@@ -60,6 +60,33 @@ const UserProfile = () => {
           {profile?.name || "Unknown User"}
         </h3>
         <p className="text-gray-500 text-sm mb-2">{profile?.email}</p>
+
+        {/* 🧾 Extra Profile Info */}
+        <div className="mt-4 text-gray-700 text-left">
+          {profile?.degree || profile?.skills || profile?.address ? (
+            <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
+              {profile?.degree && (
+                <p className="mb-2">
+                  🎓 <span className="font-semibold">Degree:</span> {profile.degree}
+                </p>
+              )}
+              {profile?.skills && (
+                <p className="mb-2">
+                  💡 <span className="font-semibold">Skills:</span> {profile.skills}
+                </p>
+              )}
+              {profile?.address && (
+                <p>
+                  📍 <span className="font-semibold">Address:</span> {profile.address}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-gray-500 italic text-center">
+              No additional profile information available.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* 🧩 Posts Section */}

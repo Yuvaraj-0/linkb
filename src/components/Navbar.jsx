@@ -10,7 +10,7 @@ const Navbar = () => {
       <div className="flex justify-between items-center px-6 py-3 md:px-10">
         {/* ✅ Left Section — Logo */}
         <Link to="/" className="text-2xl font-bold text-gray-800">
-          LinkB
+          Linked In
         </Link>
 
         {/* ✅ Center Section — Search (Always Visible) */}
