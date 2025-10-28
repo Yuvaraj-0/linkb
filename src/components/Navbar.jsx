@@ -30,9 +30,7 @@ const Navbar = () => {
           <Link to="/profile" className="hover:text-blue-500 font-medium">
             Profile
           </Link>
-          <Link to="/about" className="hover:text-blue-500 font-medium">
-            About
-          </Link>
+          
         </div>
 
         {/* ✅ Mobile Menu Button */}
