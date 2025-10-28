@@ -82,7 +82,7 @@ const CommentPopup = ({ postId, token }) => {
                     key={i}
                     className="p-2 border-b border-gray-100 text-sm md:text-base"
                   >
-                    <strong>{c.user?.name || "Anonymous"}:</strong> {c.text}
+                    <strong>{c.user?.username || "Anonymous"}:</strong> {c.text}
                   </div>
                 ))
               )}

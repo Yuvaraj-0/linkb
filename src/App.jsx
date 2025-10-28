@@ -8,6 +8,7 @@ import PostUpload from "./components/PostUploader";
 import Profile from "./pages/Profile";
 import UseerProfile from "./pages/UserProfile";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import PostView from "./pages/PostView.jsx";
 export default function App() {
   const { user } = useAuth();
 
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/upload" element={<PostUpload />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:id" element={<UseerProfile />} />
+          <Route path="/post/:id" element={<PostView />} />
         </Routes>
       </div>
     </>

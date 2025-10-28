@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 
-const ShareButtons = ({ postUrl, postTitle }) => {
+const ShareButtons = ({ postId, postTitle }) => {
   const [open, setOpen] = useState(false);
 
+  // 🧠 Create the actual post URL dynamically using your deployed domain
+  const postUrl = `https://linkb-git-main-yuvaraj-0s-projects.vercel.app/post/${postId}`; // change to your actual domain
   const encodedUrl = encodeURIComponent(postUrl);
-  const encodedTitle = encodeURIComponent(postTitle);
+  const encodedTitle = encodeURIComponent(postTitle || "Check this post!");
 
   return (
     <div className="relative">
@@ -16,7 +18,7 @@ const ShareButtons = ({ postUrl, postTitle }) => {
         🔗 Share
       </button>
 
-      {/* Popup */}
+      {/* Popup options */}
       {open && (
         <div className="absolute top-10 left-0 bg-white shadow-lg border rounded-xl p-3 flex flex-col gap-2 z-10 w-40">
           <a
