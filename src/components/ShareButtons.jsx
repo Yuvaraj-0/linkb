@@ -3,8 +3,10 @@ import React, { useState } from "react";
 const ShareButtons = ({ postId, postTitle }) => {
   const [open, setOpen] = useState(false);
 
-  // 🧠 Create the actual post URL dynamically using your deployed domain
-  const postUrl = `https://linkb-git-main-yuvaraj-0s-projects.vercel.app/post/${postId}`; // change to your actual domain
+  // ✅ Dynamically get current origin (works locally & on Vercel)
+  const baseUrl = window.location.origin;
+  const postUrl = `${baseUrl}/post/${postId}`;
+
   const encodedUrl = encodeURIComponent(postUrl);
   const encodedTitle = encodeURIComponent(postTitle || "Check this post!");
 
