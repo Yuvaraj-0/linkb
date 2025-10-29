@@ -1,16 +1,82 @@
-# React + Vite
+🧠 Social Feed App (MERN Stack)
+📋 Overview
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a social networking application built using the MERN stack (MongoDB, Express.js, React.js, Node.js).
 
-Currently, two official plugins are available:
+🚀 Features
+🔐 Authentication
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Signup / Login Pages
 
-## React Compiler
+Secure user registration and login using JWT-based authentication.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Passwords are encrypted using bcrypt.
 
-## Expanding the ESLint configuration
+After login, users are redirected to their personal feed/dashboard.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+👤 Profile Management
+
+Own Profile Page
+
+Shows user details such as name, email, bio, and skills.
+
+Displays all posts created by that specific user.
+
+Profile data can only be edited by the logged-in user.
+
+Visiting Other User Profiles
+
+Users can visit other users’ profiles to view their public details and posts.
+
+Edit options are hidden when viewing another user’s profile.
+
+🧾 Feed Functionality
+
+Post Creation
+
+Users can post text, images, or mixed media.
+
+Each post is linked to the creator’s profile.
+
+Post Editing & Deletion
+
+Only the post owner can edit or delete their posts.
+
+Like, Comment & Share
+
+Users can like or unlike posts.
+
+Commenting supports threaded replies.
+
+Share option allows copying the post link or sharing via social platforms.
+
+🔍 Search System
+
+Integrated search bar to find users by their name or username.
+
+Real-time filtering and suggestions using frontend queries.
+
+⚙️ API Behavior (Important Clarification)
+
+There is a special rule due to current API configuration:
+
+🧩 Profile data exists only if the user has created at least one feed (post).
+If a user has not posted anything yet, their profile data will also be empty when fetched from the API.
+
+💬 Usage
+
+Sign Up → Create your account
+
+Login → Access your feed and profile
+
+Create a Post → Add text/image posts
+
+Edit/Delete → Manage your posts
+
+Interact → Like, comment, and share
+
+Search Users → Find and visit others’ profiles
+
+🧑‍💻 Developer Note
+
+Due to the current API linkage between Profile and Feed, ensure that at least one feed is created per user for proper
