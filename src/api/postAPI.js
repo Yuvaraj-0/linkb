@@ -97,7 +97,9 @@ export const commentPost = async (postId, text, token) => {
 };
 
 export const getComments = async (postId, token) => {
+  console.log("📡 getComments called for postId:", postId);
   try {
+    
     const res = await fetch(`${BASE_URL}/${postId}/comments`, {
       method: "GET",
       headers: {
