@@ -12,17 +12,28 @@ export default function SearchBar() {
     const value = e.target.value;
     setQuery(value);
 
+    console.log("⌨️ Typing:", value);
+
+    // Only search if at least 2 characters
     if (value.trim().length > 1) {
+      console.log("🚀 Triggering API call for query:", value);
       try {
         const res = await searchUsers(value);
+        console.log("📥 API Response received:", res);
+
         if (res.success) {
+          console.log("✅ Users found:", res.users.length);
           setResults(res.users);
           setShowDropdown(true);
-        } else setResults([]);
+        } else {
+          console.warn("⚠️ API returned success=false");
+          setResults([]);
+        }
       } catch (err) {
-        console.error("❌ Search error:", err);
+        console.error("🔥 Error during searchUsers call:", err);
       }
     } else {
+      console.log("🛑 Query too short, clearing results");
       setShowDropdown(false);
       setResults([]);
     }
@@ -45,6 +56,7 @@ export default function SearchBar() {
               <li
                 key={user._id}
                 onClick={() => {
+                  console.log("👆 User clicked:", user);
                   navigate(`/profile/${user._id}`);
                   setQuery("");
                   setShowDropdown(false);
