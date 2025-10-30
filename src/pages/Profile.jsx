@@ -25,36 +25,20 @@ const Profile = () => {
       if (!user?._id || !token) return;
       try {
         setLoading(true);
-  
-        // Fetch both profile and posts independently
-        const [profileData, postsData] = await Promise.allSettled([
+        const [profileData, postsData] = await Promise.all([
           getProfileById(user._id, token),
           getPostsByUserAPI(user._id, token),
         ]);
-  
-        // ✅ If profile exists, set it
-        if (profileData.status === "fulfilled") {
-          setProfile(profileData.value.profile);
-        } else {
-          console.warn("⚠️ No profile found, continuing with posts only.");
-          setProfile(null);
-        }
-  
-        // ✅ Always set posts (even if profile fails)
-        if (postsData.status === "fulfilled") {
-          setPosts(postsData.value || []);
-        }
-  
+        setProfile(profileData.profile);
+        setPosts(postsData);
       } catch (error) {
-        console.error("❌ Unexpected error:", error);
+        console.error("❌ Error fetching profile or posts:", error);
       } finally {
         setLoading(false);
       }
     };
-  
     fetchData();
   }, [user, token]);
-  
 
   // 🗑️ Delete Post
   const handleDeletePost = async (postId) => {
@@ -94,11 +78,9 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       const updated = await updatePostAPI(editingPostId, editContent, token);
-      setPosts(
-        posts.map((p) =>
-          p._id === editingPostId ? { ...p, content: updated.content } : p
-        )
-      );
+      setPosts(posts.map((p) =>
+        p._id === editingPostId ? { ...p, content: updated.content } : p
+      ));
       setEditingPostId(null);
       setEditContent("");
     } catch (error) {
