@@ -85,18 +85,6 @@ const handleProfileSave = async (updatedProfile) => {
   
 
   // 💾 Save Post
-  const handleSave = async () => {
-    try {
-      const updated = await updatePostAPI(editingPostId, editContent, token);
-      setPosts(posts.map((p) =>
-        p._id === editingPostId ? { ...p, content: updated.content } : p
-      ));
-      setEditingPostId(null);
-      setEditContent("");
-    } catch (error) {
-      console.error("❌ Error updating post:", error);
-    }
-  };
 
   // ❌ Delete Profile
   const handleDeleteProfile = async () => {
