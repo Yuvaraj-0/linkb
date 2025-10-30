@@ -20,26 +20,52 @@ const Profile = () => {
   const navigate = useNavigate();
 
   // 📡 Fetch profile + posts
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (!user?._id || !token) return;
+  //     try {
+  //       setLoading(true);
+  //       const [profileData, postsData] = await Promise.all([
+  //         getProfileById(user._id, token),
+  //         getPostsByUserAPI(user._id, token),
+  //       ]);
+  //       setProfile(profileData.profile);
+  //       setPosts(postsData);
+  //     } catch (error) {
+  //       console.error("❌ Error fetching profile or posts:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [user, token]);
   useEffect(() => {
     const fetchData = async () => {
       if (!user?._id || !token) return;
+      setLoading(true);
       try {
-        setLoading(true);
-        const [profileData, postsData] = await Promise.all([
-          getProfileById(user._id, token),
-          getPostsByUserAPI(user._id, token),
-        ]);
+        // Fetch profile
+        const profileData = await getProfileById(user._id, token);
         setProfile(profileData.profile);
+      } catch (error) {
+        // Handle profile error separately
+        console.error("❌ Error fetching profile:", error);
+      }
+  
+      try {
+        // Fetch posts
+        const postsData = await getPostsByUserAPI(user._id, token);
         setPosts(postsData);
       } catch (error) {
-        console.error("❌ Error fetching profile or posts:", error);
+        // Handle posts error separately
+        console.error("❌ Error fetching posts:", error);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
   }, [user, token]);
-
+  
   // 🗑️ Delete Post
   const handleDeletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;

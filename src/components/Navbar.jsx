@@ -10,7 +10,7 @@ const Navbar = () => {
     <nav className="bg-white shadow-md fixed w-full top-0 left-0 z-50">
       <div className="flex justify-between items-center px-6 py-3 md:px-10">
         {/* ✅ Left Section — Logo */}
-        <Link to="/" className="text-2xl font-bold text-gray-800">
+        <Link to="/dashboard" className="text-2xl font-bold text-gray-800">
           Linked In
         </Link>
 
