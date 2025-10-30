@@ -21,29 +21,33 @@ const Profile = () => {
 
   // 📡 Fetch profile + posts
 useEffect(() => {
-  if (!user?._id || !token) return;
-
-  const fetchProfile = async () => {
+  const fetchData = async () => {
+    if (!user?._id || !token) return;
     try {
-      const profileData = await getProfileById(user._id, token);
-      setProfile(profileData.profile);
-    } catch (error) {
-      console.error("❌ Error fetching profile:", error);
-    }
-  };
+      setLoading(true);
 
-  const fetchPosts = async () => {
-    try {
+      // fetch posts independently
       const postsData = await getPostsByUserAPI(user._id, token);
       setPosts(postsData);
+
+      // fetch profile separately
+      try {
+        const profileData = await getProfileById(user._id, token);
+        setProfile(profileData.profile);
+      } catch (err) {
+        console.warn("⚠️ No profile found:", err.message);
+        setProfile(null);
+      }
     } catch (error) {
-      console.error("❌ Error fetching posts:", error);
+      console.error("❌ Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  fetchProfile();
-  fetchPosts();
+  fetchData();
 }, [user, token]);
+
 const handleProfileSave = async (updatedProfile) => {
   setProfile(updatedProfile.profile || updatedProfile);
   setShowEditProfile(false);
