@@ -17,6 +17,7 @@ export const createProfile = async (profileData, token) => {
 
 // ✅ Get profile by ID
 export const getProfileById = async (id, token) => {
+  console.log("📡 -------getProfileById called for id:", id);
   const res = await fetch(`${API_URL}/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,

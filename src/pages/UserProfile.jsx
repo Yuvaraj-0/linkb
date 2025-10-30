@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getUserById } from "../api/userAPI";
+// import { getUserById } from "../api/userAPI";
 import { getPostsByUserAPI } from "../api/postAPI";
+import { getProfileById } from "../api/profileAPI";
+
 
 const UserProfile = () => {
   const { id } = useParams();
@@ -12,21 +14,44 @@ const UserProfile = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("📡 Fetching full profile and posts for ID:", id);
+  
       try {
-        const userData = await getUserById(id);
-        setProfile(userData.user || userData);
-        setAvatarPreview(userData.user?.avatar || userData.avatar);
-
+        // 🔹 Fetch profile (includes user info)
+        const token = localStorage.getItem("token"); // if your routes need it
+        const { success, profile } = await getProfileById(id, token);
+  
+        if (success && profile) {
+          setProfile({
+            name: profile.user?.name || "Unknown User",
+            email: profile.user?.email || "",
+            avatar: profile.user?.avatar || "",
+            degree: profile.degree,
+            skills: profile.skills,
+            address: profile.address,
+          });
+          setAvatarPreview(profile.user?.avatar || "");
+          console.log("✅ Full profile loaded:", profile);
+        } else {
+          console.warn("🚫 No profile found for this user");
+        }
+  
+        // 🔹 Fetch posts
         const postsData = await getPostsByUserAPI(id);
-        setPosts(postsData);
+        setPosts(postsData || []);
+        console.log("📝 Posts fetched:", postsData);
       } catch (error) {
-        console.error("❌ Error fetching data:", error);
+        console.error("❌ Error fetching profile or posts:", error);
       } finally {
         setLoading(false);
+        console.log("✅ Fetch completed");
       }
     };
+  
     fetchData();
   }, [id]);
+  
+  
 
   if (loading)
     return (

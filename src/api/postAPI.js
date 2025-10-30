@@ -31,6 +31,7 @@ export const createPost = async (content, imageFile, token) => {
 
 // 🧠 Get Post by ID
 export const getPostsByUserAPI = async (userId, token) => {
+  console.log("📡 ----getPostsByUserAPI called for userId:", userId);
   try {
     const response = await axios.get(`${BASE_URL}/user/${userId}`, {
       headers: {

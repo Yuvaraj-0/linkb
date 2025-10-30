@@ -17,7 +17,7 @@ export default function App() {
       {user && <Navbar />}
       <div className="p-6 pt-20">
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Home />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/dashboard" element={<ProtectedRoute>
               <Dashboard />

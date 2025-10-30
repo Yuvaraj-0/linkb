@@ -25,20 +25,36 @@ const Profile = () => {
       if (!user?._id || !token) return;
       try {
         setLoading(true);
-        const [profileData, postsData] = await Promise.all([
+  
+        // Fetch both profile and posts independently
+        const [profileData, postsData] = await Promise.allSettled([
           getProfileById(user._id, token),
           getPostsByUserAPI(user._id, token),
         ]);
-        setProfile(profileData.profile);
-        setPosts(postsData);
+  
+        // ✅ If profile exists, set it
+        if (profileData.status === "fulfilled") {
+          setProfile(profileData.value.profile);
+        } else {
+          console.warn("⚠️ No profile found, continuing with posts only.");
+          setProfile(null);
+        }
+  
+        // ✅ Always set posts (even if profile fails)
+        if (postsData.status === "fulfilled") {
+          setPosts(postsData.value || []);
+        }
+  
       } catch (error) {
-        console.error("❌ Error fetching profile or posts:", error);
+        console.error("❌ Unexpected error:", error);
       } finally {
         setLoading(false);
       }
     };
+  
     fetchData();
   }, [user, token]);
+  
 
   // 🗑️ Delete Post
   const handleDeletePost = async (postId) => {
@@ -56,20 +72,33 @@ const Profile = () => {
     setEditingPostId(post._id);
     setEditContent(post.content);
   };
-  // 🧾 Handle saving updated profile data
-  const handleProfileSave = (updatedProfile) => {
+
+  // ✅ FIXED: Re-fetch both profile + posts after editing profile
+  const handleProfileSave = async (updatedProfile) => {
     setProfile(updatedProfile.profile || updatedProfile);
     setShowEditProfile(false);
+
+    try {
+      const [profileData, postsData] = await Promise.all([
+        getProfileById(user._id, token),
+        getPostsByUserAPI(user._id, token),
+      ]);
+      setProfile(profileData.profile);
+      setPosts(postsData);
+    } catch (error) {
+      console.error("❌ Error refetching profile and posts after update:", error);
+    }
   };
-  
 
   // 💾 Save Post
   const handleSave = async () => {
     try {
       const updated = await updatePostAPI(editingPostId, editContent, token);
-      setPosts(posts.map((p) =>
-        p._id === editingPostId ? { ...p, content: updated.content } : p
-      ));
+      setPosts(
+        posts.map((p) =>
+          p._id === editingPostId ? { ...p, content: updated.content } : p
+        )
+      );
       setEditingPostId(null);
       setEditContent("");
     } catch (error) {
