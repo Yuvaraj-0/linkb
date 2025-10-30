@@ -20,25 +20,42 @@ const Profile = () => {
   const navigate = useNavigate();
 
   // 📡 Fetch profile + posts
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user?._id || !token) return;
-      try {
-        setLoading(true);
-        const [profileData, postsData] = await Promise.all([
-          getProfileById(user._id, token),
-          getPostsByUserAPI(user._id, token),
-        ]);
-        setProfile(profileData.profile);
-        setPosts(postsData);
-      } catch (error) {
-        console.error("❌ Error fetching profile or posts:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [user, token]);
+useEffect(() => {
+  if (!user?._id || !token) return;
+
+  const fetchProfile = async () => {
+    try {
+      const profileData = await getProfileById(user._id, token);
+      setProfile(profileData.profile);
+    } catch (error) {
+      console.error("❌ Error fetching profile:", error);
+    }
+  };
+
+  const fetchPosts = async () => {
+    try {
+      const postsData = await getPostsByUserAPI(user._id, token);
+      setPosts(postsData);
+    } catch (error) {
+      console.error("❌ Error fetching posts:", error);
+    }
+  };
+
+  fetchProfile();
+  fetchPosts();
+}, [user, token]);
+const handleProfileSave = async (updatedProfile) => {
+  setProfile(updatedProfile.profile || updatedProfile);
+  setShowEditProfile(false);
+
+  // 🔄 Re-fetch posts after profile edit
+  try {
+    const postsData = await getPostsByUserAPI(user._id, token);
+    setPosts(postsData);
+  } catch (error) {
+    console.error("❌ Error refetching posts:", error);
+  }
+};
 
   // 🗑️ Delete Post
   const handleDeletePost = async (postId) => {
